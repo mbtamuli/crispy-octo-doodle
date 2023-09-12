@@ -15,7 +15,7 @@ eKYC consists of the following functionality.
 5. Generate client-wise reports for billing purposes.
 
 
-![overview](/images/assignment.png)
+![overview](./images/assignment.png)
 
 > This is the overall system design, for this exercise, you will primarily focus on the API layer. To start with, you may not need all components, the most basic ones are API layer and Database and Minio (to store images). RabbitMQ, Workers and Redis can be added in V2 implementation.
 
