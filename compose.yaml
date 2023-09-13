@@ -1,0 +1,20 @@
+services:
+  db:
+    image: mysql:8.1-oracle@sha256:c0455ac041844b5e65cd08571387fa5b50ab2a6179557fd938298cab13acf0dd
+    volumes:
+      - mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: admin123
+
+  objectstore:
+    image: quay.io/minio/minio:latest@sha256:7e697b900f60d68e9edd2e8fc0dccd158e98938d924298612c5bbd294f2a1e65
+    command: server /data --console-address ":9000"
+    volumes:
+      - minio:/data
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=admin123
+
+volumes:
+  mysql:
+  minio:
