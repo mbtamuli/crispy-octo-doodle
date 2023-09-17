@@ -1,27 +1,27 @@
 CREATE TABLE clients (
   id   INT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  name TEXT NOT NULL,
-  email TEXT NOT NULL UNIQUE,
-  plan_id INT REFERENCES plan(id)
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(320) NOT NULL UNIQUE,
+  plan_id INT REFERENCES plans(id)
     ON DELETE CASCADE
-    ON UPDATE CASCADE,
+    ON UPDATE CASCADE
 );
 
-CREATE TABLE keys (
+CREATE TABLE authkeys (
   client_id INT REFERENCES clients(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
-  access TEXT NOT NULL UNIQUE,
-  secret TEXT NOT NULL UNIQUE,
+  access VARCHAR(10) NOT NULL UNIQUE,
+  secret VARCHAR(20) NOT NULL UNIQUE
 );
 
 CREATE TABLE images (
   id   INT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  path TEXT NOT NULL UNIQUE,
-  size TEXT NOT NULL,
-  type TEXT NOT NULL,
-  extension TEXT NOT NULL,
-  client_id INT REFERENCES clients(id),
+  path VARCHAR(1087) NOT NULL UNIQUE,
+  size VARCHAR(10) NOT NULL,
+  type VARCHAR(7) NOT NULL,
+  extension VARCHAR(3) NOT NULL,
+  client_id INT REFERENCES clients(id)
 );
 
 CREATE TABLE matches (
@@ -30,5 +30,5 @@ CREATE TABLE matches (
   score INT NOT NULL,
   client_id INT REFERENCES clients(id)
     ON DELETE CASCADE
-    ON UPDATE CASCADE,
+    ON UPDATE CASCADE
 );

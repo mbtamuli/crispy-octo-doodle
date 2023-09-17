@@ -16,14 +16,14 @@ INSERT INTO clients (
 -- name: UpdateClient :execresult
 UPDATE clients
 SET plan_id = $2
-WHERE id = $1
+WHERE id = $1;
 
 -- name: GetKeys :one
-SELECT * FROM keys
+SELECT * FROM authkeys
 WHERE client_id = ? LIMIT 1;
 
 -- name: CreateKey :execresult
-INSERT INTO keys (
+INSERT INTO authkeys (
   client_id, access, secret
 ) VALUES (
   ?, ?, ?
