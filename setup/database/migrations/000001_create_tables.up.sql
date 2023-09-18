@@ -8,7 +8,7 @@ CREATE TABLE clients (
 );
 
 CREATE TABLE authkeys (
-  client_id INT REFERENCES clients(id)
+  client_id INT NOT NULL REFERENCES clients(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   access VARCHAR(10) NOT NULL UNIQUE,
@@ -17,7 +17,7 @@ CREATE TABLE authkeys (
 
 CREATE TABLE images (
   id   INT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  path VARCHAR(1087) NOT NULL UNIQUE,
+  path VARCHAR(1087) NOT NULL,
   size VARCHAR(10) NOT NULL,
   type VARCHAR(7) NOT NULL,
   extension VARCHAR(3) NOT NULL,
@@ -31,4 +31,12 @@ CREATE TABLE matches (
   client_id INT REFERENCES clients(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
+);
+
+CREATE TABLE plans(
+  id   INT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(10) NOT NULL,
+  base INT NOT NULL,
+  face_match_and_ocr INT NOT NULL,
+  upload INT NOT NULL
 );

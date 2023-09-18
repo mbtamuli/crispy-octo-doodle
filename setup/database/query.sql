@@ -1,16 +1,16 @@
--- name: GetClient :one
-SELECT * FROM clients
-WHERE id = ? LIMIT 1;
+-- name: GetClientID :one
+SELECT id FROM clients
+WHERE email = ? LIMIT 1;
 
 -- name: ListClients :many
 SELECT * FROM clients
 ORDER BY name;
 
--- name: CreateClient :execresult
+-- name: CreateClient :execlastid
 INSERT INTO clients (
-  name, email
+  name, email, plan_id
 ) VALUES (
-  ?, ?
+  ?, ?, ?
 );
 
 -- name: UpdateClient :execresult
@@ -41,7 +41,7 @@ ORDER BY path;
 SELECT * FROM images
 WHERE client_id = $1;
 
--- name: CreateImage :execresult
+-- name: CreateImage :execlastid
 INSERT INTO images (
   path, size, type, extension, client_id
 ) VALUES (
@@ -58,3 +58,6 @@ INSERT INTO matches (
 -- name: ListMatchesForClient :many
 SELECT * FROM matches
 WHERE client_id = $1;
+
+-- name: ListPlans :many
+SELECT * FROM plans;
