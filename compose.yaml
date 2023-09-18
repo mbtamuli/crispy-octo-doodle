@@ -7,6 +7,9 @@ services:
       - mysql:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: admin123
+      MYSQL_DATABASE: ekyc
+      MYSQL_USER: dbuser
+      MYSQL_PASSWORD: mySuperSecret123
 
   objectstore:
     image: quay.io/minio/minio:latest@sha256:7e697b900f60d68e9edd2e8fc0dccd158e98938d924298612c5bbd294f2a1e65

@@ -1,16 +1,44 @@
+DSN="mysql://dbuser:mySuperSecret123@tcp(127.0.0.1:3306)/ekyc"
+
+##@ Application
+
+.PHONY: run
+run: start migrate ## Run the application
+	@echo "Run the application"
+	@go run main.go
+
+##@ Database
+
+.PHONY: db-gen
+db-gen: ## Generate code for database using sqlc
+	@echo "Generate code for database using sqlc"
+	@cd setup/database && \
+		sqlc generate
+
+.PHONY: migrate
+migrate: ## Run migrations to seed the database
+	@echo "Run migrations to seed the database"
+	@cd setup/database && \
+		echo "Waiting for database to be up..." && \
+		for i in 1 2 3 4 5; do docker compose exec db mysql -uroot -padmin123 -e "SHOW DATABASES;" > /dev/null 2>&1 && break || sleep 3; done && \
+		migrate -database ${DSN} -path migrations up
+
 ##@ Docker Tasks
 
 .PHONY: start
 start: ## Start the containers for different services
-	docker compose up -d
+	@echo "Start the containers for different services"
+	@docker compose up -d
 
 .PHONY: stop
 stop: ## Stop all service containers
-	docker compose stop
+	@echo "Stop all service containers"
+	@docker compose stop
 
 .PHONY: clean
-clean: ## Remove all containers and network
-	docker compose down
+clean: ## Remove all Docker containers, volumes and network
+	@echo "Remove all Docker containers, volumes and network"
+	@docker compose down --volumes --rmi local
 
 ##@ Support
 
