@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/base64"
 	"fmt"
 	"math/rand"
@@ -13,7 +15,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-faker/faker/v4"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
+	"github.com/mbtamuli/crispy-octo-doodle/database"
 )
 
 func CustomGenerator() {
@@ -66,8 +70,17 @@ func HMACValidator() gin.HandlerFunc {
 }
 
 func setupRouter() *gin.Engine {
-	r := gin.Default()
+	// DB setup
+	ctx := context.Background()
+	db, err := sql.Open("mysql", "dbuser:mySuperSecret123@/ekyc?parseTime=true")
+	if err != nil {
+		panic(err)
+	}
 
+	queries := database.New(db)
+
+	// Gin
+	r := gin.Default()
 	apiV1 := r.Group("/api/v1")
 
 	apiV1.POST("signup", func(c *gin.Context) {
@@ -82,7 +95,47 @@ func setupRouter() *gin.Engine {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"errorMessage": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"accessKey": strings.ReplaceAll(uuid.NewString(), "-", "")[:10], "secretKey": strings.ReplaceAll(uuid.NewString(), "-", "")[:20]})
+
+		plansResult, err := queries.ListPlans(ctx)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"errorMessage": err.Error()})
+			return
+		}
+
+		plans := make(map[string]int32)
+		for _, plan := range plansResult {
+			plans[plan.Name] = plan.ID
+		}
+
+		// fmt.Println(plans)
+
+		// create a user
+		userID, err := queries.CreateClient(ctx, database.CreateClientParams{
+			Name:   json.Name,
+			Email:  json.Email,
+			PlanID: sql.NullInt32{Int32: plans[json.Plan], Valid: true},
+		})
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"errorMessage": err.Error()})
+			return
+		}
+
+		// create keys
+
+		accessKey := strings.ReplaceAll(uuid.NewString(), "-", "")[:10]
+		secretKey := strings.ReplaceAll(uuid.NewString(), "-", "")[:20]
+
+		_, err = queries.CreateKey(ctx, database.CreateKeyParams{
+			ClientID: int32(userID),
+			Access:   accessKey,
+			Secret:   secretKey,
+		})
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"errorMessage": err.Error()})
+			return
+		}
+
+		c.IndentedJSON(http.StatusOK, gin.H{"accessKey": accessKey, "secretKey": secretKey})
 	})
 
 	authenticated := apiV1.Group("/")
@@ -102,7 +155,7 @@ func setupRouter() *gin.Engine {
 
 		switch json.ImageType {
 		case "face", "id_card":
-			c.JSON(http.StatusOK, gin.H{"id": uuid.NewString()})
+			c.IndentedJSON(http.StatusOK, gin.H{"id": uuid.NewString()})
 		default:
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"errorMessage": "invalid type, supported types are face or id_card"})
 		}
@@ -120,7 +173,7 @@ func setupRouter() *gin.Engine {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"score": rand.Intn(100)})
+		c.IndentedJSON(http.StatusOK, gin.H{"score": rand.Intn(100)})
 	})
 
 	authenticated.POST("ocr", func(c *gin.Context) {
@@ -148,7 +201,7 @@ func setupRouter() *gin.Engine {
 			fmt.Println(err)
 		}
 
-		c.JSON(http.StatusOK, data)
+		c.IndentedJSON(http.StatusOK, data)
 	})
 	return r
 }
